@@ -1,0 +1,12 @@
+---
+# handlers file for netzwirt.nexus-oss
+
+- name: start nexus
+  service: 
+    name: nexus 
+    state: started
+
+- name: restart nexus
+  service: 
+    name: nexus 
+    state: restarted
