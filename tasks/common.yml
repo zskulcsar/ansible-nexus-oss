@@ -1,0 +1,130 @@
+---
+## Tasks what are common accross the various distros
+
+- name: Create group for nexus
+  group:
+    name: "{{nexus_oss_group}}"
+    state: present
+
+
+- name: Create system-user for nexus
+  user:
+    name: "{{nexus_oss_user}}"
+    group: "{{nexus_oss_group}}"
+    system: yes
+    state: present
+
+- name: Download nexus oss
+  get_url:
+    url: "http://download.sonatype.com/nexus/oss/{{nexus_file}}"
+    checksum: "{{nexus_oss_cheksum}}"
+    dest: "/tmp/{{nexus_file}}"
+
+
+- name: ensure installation directory exists
+  file:
+    path: "{{nexus_oss_installation_dir}}"
+    state: directory
+    owner: "{{nexus_oss_user}}"
+    group: "{{nexus_oss_group}}"
+
+
+- name: ensure working directory exists
+  file:
+    path: "{{nexus_oss_working_dir}}"
+    state: directory
+    owner: "{{nexus_oss_user}}"
+    group: "{{nexus_oss_group}}"
+    mode: 0755
+    recurse: true
+
+# Hack because of unarchive. See issue https://github.com/ansible/ansible-modules-core/issues/2936
+- name: Check nexus-oss folder
+  command: ls {{nexus_oss_installation_dir}}
+  register: directory_check
+
+
+- name: Untar nexus-oss archive
+  command: tar -xzf /tmp/{{nexus_file}} -C {{nexus_oss_installation_dir}}
+  when: directory_check.stdout.find("nexus-{{nexus_oss_version}}") == -1
+
+
+- name: ensure new installation os owned by nexus user
+  file:
+    path: "{{nexus_oss_installation_dir}}/nexus-{{nexus_oss_version}}"
+    owner: "{{nexus_oss_user}}"
+    group: "{{nexus_oss_group}}"
+    recurse: true
+
+
+- name: link current version
+  file:
+    state: link
+    src: "{{nexus_oss_installation_dir}}/nexus-{{nexus_oss_version}}"
+    name: "{{nexus_oss_installation_dir}}/current-nexus"
+
+
+- name: configure port
+  lineinfile:
+    dest: "{{nexus_oss_installation_dir}}/current-nexus/conf/nexus.properties"
+    line: "application-port={{nexus_oss_port}}"
+    regexp: "application-port=.*"
+    state: present
+  notify:
+    - restart nexus
+
+
+- name: configure working directory
+  lineinfile:
+    dest: "{{nexus_oss_installation_dir}}/current-nexus/conf/nexus.properties"
+    line: "nexus-work={{nexus_oss_working_dir}}"
+    regexp: "nexus-work=.*"
+    state: present
+  notify:
+    - restart nexus
+
+
+- name: configure context path
+  lineinfile:
+    dest: "{{nexus_oss_installation_dir}}/current-nexus/conf/nexus.properties"
+    line: "nexus-webapp-context-path={{nexus_oss_context_path}}"
+    regexp: "nexus-webapp-context-path=.*"
+    state: present
+  notify:
+    - restart nexus
+
+
+- name: create pid directory
+  file:
+    path: /var/run/nexus
+    owner: "{{nexus_oss_user}}"
+    group: "{{nexus_oss_group}}"
+    state: directory
+
+
+- name: change homedir in init-script
+  replace:
+    dest: "{{nexus_oss_installation_dir}}/current-nexus/bin/nexus"
+    regexp: '^NEXUS_HOME=(.*)$'
+    replace: 'NEXUS_HOME={{nexus_oss_installation_dir}}/current-nexus'
+
+
+- name: change user in init-script
+  replace:
+    dest: "{{nexus_oss_installation_dir}}/current-nexus/bin/nexus"
+    regexp: "^#RUN_AS_USER=(.*)$"
+    replace: "RUN_AS_USER={{nexus_oss_user}}"
+
+
+- name: change pid directory in init-script
+  replace:
+    dest: "{{nexus_oss_installation_dir}}/current-nexus/bin/nexus"
+    regexp: "^#PIDDIR=(.*)$"
+    replace: "PIDDIR=/var/run/nexus"
+
+
+- name: copy init-script to /etc/init.d
+  command: cp "{{nexus_oss_installation_dir}}/current-nexus/bin/nexus" /etc/init.d/nexus
+    creates=/etc/init.d/nexus
+  notify:
+    - start nexus

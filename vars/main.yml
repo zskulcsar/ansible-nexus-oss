@@ -1,0 +1,12 @@
+---
+# vars file for nexus-oss
+nexus_file: "nexus-{{nexus_oss_version}}-bundle.tar.gz"
+
+nexus_oss_group: nexus
+nexus_oss_user: nexus
+
+nexus_oss_installation_dir: /opt/srv/nexus
+nexus_oss_working_dir: /opt/data/nexus
+nexus_oss_context_path: /nexus
+
+nexus_oss_download_url: 'http://download.sonatype.com/nexus/oss/'

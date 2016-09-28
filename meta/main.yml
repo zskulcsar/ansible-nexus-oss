@@ -1,8 +1,8 @@
 
 ---
 galaxy_info:
-  author: 'Reto Gassmann'
-  description: 'Install Nexus Repository Manager'
+  author: 'Reto Gassmann / Zsolt Kulcsar'
+  description: 'Install Nexus OSS Repository Manager'
   license: BSD
   min_ansible_version: '1.8'
 
@@ -13,6 +13,15 @@ galaxy_info:
   - name: Debian
     versions:
     - jessie
+  - name: CentOS
+    versions:
+      - 6
+      - 7
+  - name: EL
+    versions:
+      - 6
+      - 7
+  - name: Amazon
 
   categories:
   - java

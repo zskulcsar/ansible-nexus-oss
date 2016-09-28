@@ -1,13 +1,8 @@
 ---
 # defaults file for netzwirt.nexus-oss
 
-nexus_oss_group: nexus
-nexus_oss_user: nexus
-
-nexus_oss_installation_dir: /opt/srv/nexus
-nexus_oss_working_dir: /opt/data/nexus
-nexus_oss_context_path: /nexus
-
+# TODO: include handling of 3.x+ versions
 nexus_oss_version: '2.12.0-01' # pick one from http://www.sonatype.org/nexus/archived/
+nexus_oss_cheksum: 'sha1:1a9aaad8414baffe0a2fd46eed1f41b85f4049e6'
 
 nexus_oss_port: 8081

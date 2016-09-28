@@ -1,0 +1,7 @@
+---
+## CentOS specific tasks
+
+- name: install wget
+  yum:
+    name: wget
+    state: present

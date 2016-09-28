@@ -1,0 +1,7 @@
+---
+## Ubuntu specific tasks
+
+- name: install wget
+  apt:
+    name: wget
+    state: present
